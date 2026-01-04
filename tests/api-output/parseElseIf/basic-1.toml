@@ -3,3 +3,4 @@ instructions = [
 
 arg.context.ifConditionResult = \"a\" == \"b\";""",
 ]
+noPosIncrease = true

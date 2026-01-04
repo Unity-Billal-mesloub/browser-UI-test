@@ -282,6 +282,7 @@ arg.context.ifConditionResult = ${tuple[0].value.value};`],
         'callback': () => {
             if (parser.ifConditionResult !== true) {
                 context.prevCondition = false;
+                parser.increase_context_pos();
                 return;
             }
             context.prevCondition = true;
@@ -293,6 +294,7 @@ arg.context.ifConditionResult = ${tuple[0].value.value};`],
                 'ignoreParentBacktrace': true,
             });
         },
+        'noPosIncrease': true,
     };
 }
 
@@ -332,6 +334,7 @@ arg.context.ifConditionResult = ${tuple[0].value.value};`],
         'callback': () => {
             if (parser.ifConditionResult !== true) {
                 context.prevCondition = false;
+                parser.increase_context_pos();
                 return;
             }
             context.prevCondition = true;
@@ -343,6 +346,7 @@ arg.context.ifConditionResult = ${tuple[0].value.value};`],
                 'ignoreParentBacktrace': true,
             });
         },
+        'noPosIncrease': true,
     };
 }
 
@@ -381,6 +385,7 @@ function parseElse(parser) {
     return {
         'instructions': [],
         'callback': () => {
+            parser.increase_context_pos();
             parser.pushNewContext({
                 'ast': context.ast,
                 'commands': ret.value.value,
@@ -389,6 +394,7 @@ function parseElse(parser) {
                 'ignoreParentBacktrace': true,
             });
         },
+        'noPosIncrease': true,
     };
 }
 
