@@ -98,7 +98,14 @@ class CommandNode {
             this.argsStart = 0;
             this.argsEnd = 0;
         }
-        this.text = text;
+        // Instead of writing `this.text = text`, we use the code below to prevent having `text`
+        // displayed in the console.
+        Object.defineProperty(this, 'text', {
+            enumerable: false,
+            configurable: false,
+            writable: false,
+            value: text,
+        });
     }
 
     getInferredAst(variables, functionArgs) {
@@ -162,6 +169,7 @@ class AstLoader {
         this.absolutePath = null;
         this.errors = [];
         this.commands = [];
+        let text = '';
         if (content === null) {
             if (currentDir === null || path.isAbsolute(filePath)) {
                 this.absolutePath = path.normalize(filePath);
@@ -171,24 +179,23 @@ class AstLoader {
             if (savedAsts.has(this.absolutePath)) {
                 const ast = savedAsts.get(this.absolutePath);
                 this.commands = ast.commands;
-                this.text = ast.text;
                 this.errors = ast.errors;
                 return;
             }
             try {
-                this.text = utils.readFile(this.absolutePath);
+                text = utils.readFile(this.absolutePath);
             } catch (err) {
                 this.errors.push(makeError(
                     `File \`${filePath}\` (\`${this.absolutePath}\`) does not exist`,
                     null,
                 ));
-                this.text = '';
+                text = '';
                 return;
             }
         } else {
-            this.text = content;
+            text = content;
         }
-        const parser = new Parser(this.text);
+        const parser = new Parser(text);
         // eslint-disable-next-line no-constant-condition
         while (true) {
             const ret = parser.parseNextCommand();
@@ -214,7 +221,6 @@ class AstLoader {
 \`else-if\` command`,
                             ret.commandLine,
                         ));
-                        this.text = '';
                         return;
                     }
                 }
@@ -224,14 +230,13 @@ class AstLoader {
                     parser.elems,
                     parser.hasVariable,
                     parser.commandStart,
-                    this.text,
+                    text,
                 ));
             }
         }
         if (this.absolutePath !== null) {
             savedAsts.set(this.absolutePath, {
                 'commands': this.commands,
-                'text': this.text,
                 'errors': this.errors,
             });
         }

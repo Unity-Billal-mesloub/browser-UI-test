@@ -195,6 +195,8 @@ async function checkFailedTestName(x) {
         }
         if (nbFailures < 1) {
             x.addError(`No failed tests found in \`failed-test-name\`, full output:\n${output}`);
+        } else if (x.getTotalErrors() !== 0) {
+            print(`\`failed-test-name\` failed, full output:\n${output}`);
         }
     }
 
@@ -250,6 +252,106 @@ async function checkCompactDisplayFormat(x) {
     }
 }
 
+// It's very important that files are correctly rendered so this test ensures that the backtrace is
+// actually correct.
+async function checkBacktrace(x) {
+    const options = getOptionsWithFilter('failure-from-include-2.goml');
+    const browser = await utils.loadPuppeteer(options);
+
+    // We replace stdout and stderr.
+    let output = '';
+    function write(arg) {
+        output += arg;
+    }
+    const oldStdout = process.stdout.write;
+    process.stdout.write = write;
+    const oldStderr = process.stderr.write;
+    process.stderr.write = write;
+
+    let err = null;
+    try {
+        await runTests({
+            'options': options,
+            'browser': browser,
+            'showLogs': true,
+            'showNbThreads': false,
+        });
+    } catch (exc) {
+        err = exc;
+    }
+
+    process.stdout.write = oldStdout;
+    process.stderr.write = oldStderr;
+
+    if (err !== null) {
+        x.addError(`${err}\n\nOutput: ${output}`);
+    } else {
+        // We skip the two first lines.
+        const lines = output.split('\n');
+        const expected = [
+            ['', '4'],
+            ['tests/ui/auxiliary/utils2.goml', '7'],
+            ['tests/ui/auxiliary/utils.goml', '6'],
+        ];
+        let pos = 0;
+        let i = 0;
+        while (i < lines.length) {
+            if (lines[i].startsWith('[ERROR]')) {
+                break;
+            }
+            ++i;
+        }
+        if (lines[i].startsWith('[ERROR]')) {
+            // The first line doesn't display the file name since it's supposed to be the same.
+            lines[i++].split('[ERROR] line ')[1] = expected[pos++][1];
+        } else {
+            x.addError(`Missing line with just the line error, output:\n${output}`);
+            return;
+        }
+        for (; i < lines.length; ++i) {
+            const line = lines[i];
+            if (line.includes(' line ')) {
+                if (pos >= expected.length) {
+                    x.addError(`Found an expected error: \`${line}\``);
+                    continue;
+                }
+                const file = line.split(' at `')[1].split('`')[0];
+                let nb = line.split(' line ')[1];
+                if (nb.includes(':')) {
+                    nb = nb.split(':')[0];
+                }
+
+                if (file !== expected[pos][0] || nb !== expected[pos][1]) {
+                    x.addError(`Expected "at \`${expected[pos][0]}\` line ${expected[pos][1]}", \
+found "at \`${file}\` line ${nb}"`);
+                }
+                pos += 1;
+            } else if (line.trim().includes(' at <')) {
+                // reached the URL, can stop here.
+                break;
+            }
+        }
+        if (pos < expected.length) {
+            x.addError(`Some expected errors were not found, output:\n${output}`);
+        }
+        if (x.getTotalErrors() === 0) {
+            x.addSuccess();
+        } else {
+            print(`test failed, output:\n${output}`);
+        }
+    }
+}
+
+async function runIfMatches(x, testName, callback) {
+    if (matchesFilter(x, testName)) {
+        await x.startTestSuite(testName, true, async() => {
+            await callback(x);
+        });
+    } else {
+        print(`\`${testName}\` test filtered out`);
+    }
+}
+
 async function checkUi(x) {
     return await x.startTestSuite('ui items', false, async() => {
         await x.startTestSuite('ui-test', true, async(_level, _suiteName) => {
@@ -260,20 +362,9 @@ async function checkUi(x) {
         checkImageFileForTest(
             x, 'tests/ui/screenshot-on-failure-failure.png', 'screenshot-on-failure.goml');
 
-        if (matchesFilter(x, 'compact-display-format')) {
-            await x.startTestSuite('compact display-format', true, async() => {
-                await checkCompactDisplayFormat(x);
-            });
-        } else {
-            print('`compact-display-format` test filtered out');
-        }
-        if (matchesFilter(x, 'failed-test-name')) {
-            await x.startTestSuite('failed-test-name', true, async() => {
-                await checkFailedTestName(x);
-            });
-        } else {
-            print('`failed-test-name` test filtered out');
-        }
+        await runIfMatches(x, 'compact-display-format', checkCompactDisplayFormat);
+        await runIfMatches(x, 'failed-test-name', checkFailedTestName);
+        await runIfMatches(x, 'backtrace', checkBacktrace);
     });
 }
 

@@ -7,17 +7,17 @@ function convertMessageFromJson(message) {
     let lineDisplay = '';
     if (message.line !== null && message.line !== undefined) {
         if (Array.isArray(message.line.backtrace) && message.line.backtrace.length > 0) {
-            const last = message.line.backtrace[message.line.backtrace.length - 1];
-            lineDisplay += `line ${last.line}`;
-            const backtrace = message.line.backtrace.slice(0, message.line.backtrace.length - 1);
+            const first = message.line.backtrace[0];
+            lineDisplay += `line ${first.line}`;
+            const backtrace = message.line.backtrace.slice(1);
             for (const msg of backtrace) {
                 lineDisplay += `${EOL}    at \`${msg.file}\` line ${msg.line}`;
             }
-            lineDisplay += `${EOL}    at \`${message.file}\` ${lineInfo} ${message.line.line}: `;
         }
         if (lineDisplay.length === 0) {
-            lineDisplay += `${lineInfo} ${message.line.line}: `;
+            lineDisplay += `${lineInfo} ${message.line.line}`;
         }
+        lineDisplay += ': ';
     }
     const levelDisplay = message.showLogLevel !== false ? `[${message.level.toUpperCase()}] ` : '';
     const newLine = message.disableNewLine === true ? '' : EOL;
@@ -37,7 +37,7 @@ function getTestFile(fileInfo) {
         && fileInfo.line !== undefined
         && Array.isArray(fileInfo.line.backtrace)
     ) {
-        file = fileInfo.line.backtrace[fileInfo.line.backtrace.length - 1].file;
+        file = fileInfo.line.backtrace[0].file;
     }
     return file;
 }

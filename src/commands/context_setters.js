@@ -262,6 +262,7 @@ pages.push(iframe);`;
                 'ast': context.ast,
                 'commands': tuple[1].value.value,
                 'currentCommand': 0,
+                'filePath': context.ast.filePath,
                 'functionArgs': new Map(),
                 'dropCallback': pages => {
                     if (pages.length < 2) {
