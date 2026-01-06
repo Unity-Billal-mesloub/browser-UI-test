@@ -267,18 +267,18 @@ class ParserWithContext {
     get_current_command_line() {
         const command = this.get_current_command();
         const backtrace = [];
-        let prevIgnoreParent = this.contexts.length > 1 &&
-            this.contexts[this.contexts.length - 1]['ignoreParentBacktrace'] === true;
-        for (let i = this.contexts.length - 2; i >= 0; --i) {
+        const max = this.contexts.length - 1;
+        for (let i = 0; i < max; ++i) {
             const c = this.contexts[i];
-            if (!prevIgnoreParent) {
+            if (i + 1 > max ||
+                this.contexts[i + 1]['ignoreParentBacktrace'] !== true
+            ) {
                 const shortPath = stripCommonPathsPrefix(c.ast.absolutePath);
                 backtrace.push({
                     'file': shortPath,
                     'line': c.commands[c.currentCommand].line,
                 });
             }
-            prevIgnoreParent = c['ignoreParentBacktrace'] === true;
         }
         const lineInfo = {
             'line': command.line,
@@ -291,7 +291,7 @@ class ParserWithContext {
 
     pushNewContext(context) {
         this.contexts.push(context);
-        if (this.contexts.length > 100) {
+        if (this.contexts.length >= 100) {
             return {
                 'error': 'reached maximum recursion size (100)',
                 'line': this.get_current_command_line(),

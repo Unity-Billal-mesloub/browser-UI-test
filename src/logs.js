@@ -7,15 +7,13 @@ function convertMessageFromJson(message) {
     let lineDisplay = '';
     if (message.line !== null && message.line !== undefined) {
         if (Array.isArray(message.line.backtrace) && message.line.backtrace.length > 0) {
-            // FIXME: Clean up that awful `backtrace` code and correctly generate it instead of
-            // this whole mess...
             const last = message.line.backtrace[message.line.backtrace.length - 1];
             lineDisplay += `line ${last.line}`;
             const backtrace = message.line.backtrace.slice(0, message.line.backtrace.length - 1);
-            for (const msg of backtrace.reverse()) {
-                lineDisplay += `${EOL}    from \`${msg.file}\` line ${msg.line}`;
+            for (const msg of backtrace) {
+                lineDisplay += `${EOL}    at \`${msg.file}\` line ${msg.line}`;
             }
-            lineDisplay += `${EOL}    ${lineInfo} ${message.line.line}: `;
+            lineDisplay += `${EOL}    at \`${message.file}\` ${lineInfo} ${message.line.line}: `;
         }
         if (lineDisplay.length === 0) {
             lineDisplay += `${lineInfo} ${message.line.line}: `;
