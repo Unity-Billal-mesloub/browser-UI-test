@@ -1496,14 +1496,18 @@ function checkParseContent(x, func) {
     }]);
     x.assert(
         func(':'),
-        [{'message': 'Unexpected `:` when parsing command', 'isFatal': true, 'line': {'line': 1}}],
+        [{
+            'message': 'Unexpected `:` when parsing command',
+            'isFatal': true,
+            'line': {'line': 1},
+        }],
     );
 
     x.assert(func('go-to: "file:///home"'), [
         {
             'fatal_error': true,
             'original': 'go-to: "file:///home"',
-            'line': {'line': 1},
+            'line': {'backtrace': [{'file': '', 'line': 1}]},
             'instructions': [
                 `\
 const url = "file:///home";
@@ -1527,20 +1531,20 @@ try {
             '`if`, `else-if`, `else`, `javascript`, `screenshot-comparison`, ' +
             '`screenshot-on-failure`, `store-value`, `set-timeout` or `set-window-size` ' +
             'can be used before)!',
-        'line': {'line': 1},
+        'line': {'backtrace': [{'file': '', 'line': 1}]},
     }]);
     x.assert(func('expect-failure: true\ngo-to: "file:///home"'), [
         {
             'fatal_error': false,
             'wait': false,
             'original': 'expect-failure: true',
-            'line': {'line': 1},
+            'line': {'backtrace': [{'file': '', 'line': 1}]},
             'instructions': ['arg.expectedToFail = true;'],
         },
         {
             'fatal_error': true,
             'original': 'go-to: "file:///home"',
-            'line': {'line': 2},
+            'line': {'backtrace': [{'file': '', 'line': 2}]},
             'instructions': [
                 `\
 const url = "file:///home";
@@ -1561,7 +1565,7 @@ try {
         {
             'fatal_error': true,
             'original': 'go-to: "file:///home"',
-            'line': {'line': 1},
+            'line': {'backtrace': [{'file': '', 'line': 1}]},
             'instructions': [
                 `\
 const url = "file:///home";
@@ -1580,7 +1584,7 @@ try {
         {
             'fatal_error': false,
             'original': 'reload:',
-            'line': {'line': 2},
+            'line': {'backtrace': [{'file': '', 'line': 2}]},
             'instructions': [`\
 const ret = pages[0].reload({'waitUntil': 'domcontentloaded', 'timeout': 30000});
 await ret;`,
@@ -1590,7 +1594,7 @@ await ret;`,
         {
             'fatal_error': true,
             'original': 'go-to: "file:///home"',
-            'line': {'line': 3},
+            'line': {'backtrace': [{'file': '', 'line': 3}]},
             'instructions': [
                 `\
 const url = "file:///home";
@@ -1609,13 +1613,17 @@ try {
     ]);
     x.assert(
         func('// just a comment\na: b'),
-        [{'message': 'Unknown command "a"', 'isFatal': false, 'line': {'line': 2}}],
+        [{
+            'message': 'Unknown command "a"',
+            'isFatal': false,
+            'line': {'line': 2},
+        }],
     );
     x.assert(func('go-to: "file:///home"\nemulate: "test"'), [
         {
             'fatal_error': true,
             'original': 'go-to: "file:///home"',
-            'line': {'line': 1},
+            'line': {'backtrace': [{'file': '', 'line': 1}]},
             'instructions': [
                 `\
 const url = "file:///home";
@@ -1633,14 +1641,14 @@ try {
         },
         {
             'error': 'Command `emulate` must be used before first `go-to`!',
-            'line': {'line': 2},
+            'line': {'backtrace': [{'file': '', 'line': 2}]},
         },
     ]);
     x.assert(func('go-to: "file:///home"\nassert-text: ("a", "b")'), [
         {
             'fatal_error': true,
             'original': 'go-to: "file:///home"',
-            'line': {'line': 1},
+            'line': {'backtrace': [{'file': '', 'line': 1}]},
             'instructions': [
                 `\
 const url = "file:///home";
@@ -1661,7 +1669,7 @@ try {
             'wait': false,
             'checkResult': true,
             'original': 'assert-text: ("a", "b")',
-            'line': {'line': 2},
+            'line': {'backtrace': [{'file': '', 'line': 2}]},
             'instructions': [`\
 async function checkTextForElem(elem) {
     await elem.evaluate(e => {

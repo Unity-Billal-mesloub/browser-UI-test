@@ -62,13 +62,24 @@ function extractExpectedErrors(filePath) {
         if (i - ups < 0) {
             throw new Error(`Invalid number of \`~\` at line ${i + 1} in file \`${filePath}\``);
         }
-        if (x < line.length && line[x] === '?') {
+        if (line[x] === '|') {
+            if (expected.length < 1) {
+                throw new Error(`Cannot use \`~|\` if there is no error declared before \
+(line ${i + 1} in file \`${filePath}\`)`);
+            } else if (ups !== 0) {
+                throw new Error(`Cannot use \`^\` and \`|\` at the same time \
+(line ${i + 1} in file \`${filePath}\`)`);
+            }
+            ups = i - expected[expected.length - 1].line;
             x += 1;
+        }
+        if (x < line.length && line[x] === '?') {
             if (ups !== 0) {
                 throw new Error(
                     `Mix of \`^\` and of \`?\` characters at line ${i + 1} in file \`${filePath}\``,
                 );
             }
+            x += 1;
             unknownLocation = true;
         }
         while (x < line.length && line[x] === ' ') {
@@ -112,7 +123,7 @@ function isMatchingError(error, msg) {
         return true;
     }
     const backtrace = msg.line.backtrace;
-    return Array.isArray(backtrace) && backtrace[backtrace.length - 1].line === error.line;
+    return Array.isArray(backtrace) && backtrace[0].line === error.line;
 }
 
 class Assert {
@@ -301,8 +312,10 @@ class Assert {
             }
             for (const expected of expectedErrors) {
                 if (expected.found !== true) {
+                    const extra = expected.line === expected.originalLine ?
+                        '' : ` (for error declared at line ${expected.originalLine})`;
                     notFoundErrors.push(`\`${file}\`: Expected error not found at line ` +
-                        expected.originalLine);
+                        expected.line + extra);
                 }
             }
             if (notFoundErrors.length + unexpectedErrors.length !== 0) {

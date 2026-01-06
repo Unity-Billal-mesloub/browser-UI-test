@@ -230,6 +230,7 @@ class ParserWithContext {
                 'commands': ast.commands,
                 'currentCommand': 0,
                 'functionArgs': new Map(),
+                'filePath': ast.absolutePath,
             },
         ];
     }
@@ -265,33 +266,30 @@ class ParserWithContext {
     }
 
     get_current_command_line() {
-        const command = this.get_current_command();
         const backtrace = [];
-        let prevIgnoreParent = this.contexts.length > 1 &&
-            this.contexts[this.contexts.length - 1]['ignoreParentBacktrace'] === true;
-        for (let i = this.contexts.length - 2; i >= 0; --i) {
+        const max = this.contexts.length;
+
+        for (let i = 0; i < max; ++i) {
             const c = this.contexts[i];
-            if (!prevIgnoreParent) {
-                const shortPath = stripCommonPathsPrefix(c.ast.absolutePath);
+            if (c.currentCommand < c.commands.length &&
+                (i + 1 >= max || this.contexts[i + 1]['ignoreParentBacktrace'] !== true)
+            ) {
+                const shortPath = stripCommonPathsPrefix(c.filePath);
                 backtrace.push({
                     'file': shortPath,
                     'line': c.commands[c.currentCommand].line,
                 });
             }
-            prevIgnoreParent = c['ignoreParentBacktrace'] === true;
         }
-        const lineInfo = {
-            'line': command.line,
+
+        return {
+            backtrace,
         };
-        if (backtrace.length !== 0) {
-            lineInfo.backtrace = backtrace;
-        }
-        return lineInfo;
     }
 
     pushNewContext(context) {
         this.contexts.push(context);
-        if (this.contexts.length > 100) {
+        if (this.contexts.length >= 100) {
             return {
                 'error': 'reached maximum recursion size (100)',
                 'line': this.get_current_command_line(),
@@ -304,7 +302,7 @@ class ParserWithContext {
         const context = this.get_current_context();
         if (context === null) {
             return '';
-        } else if (context.filePath !== undefined) {
+        } else if (context.filePath !== undefined && context.filePath !== null) {
             return context.filePath;
         } else if (context.ast.absolutePath !== null) {
             return context.ast.absolutePath;
@@ -384,7 +382,7 @@ class ParserWithContext {
         const inferred = command.getInferredAst(this.variables, context.functionArgs);
         if (inferred.errors.length !== 0) {
             return {
-                'filePath': context.ast.absolutePath,
+                'filePath': context.filePath,
                 'line': command.line,
                 'errors': inferred.errors,
             };

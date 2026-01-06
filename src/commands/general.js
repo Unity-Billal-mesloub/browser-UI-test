@@ -240,6 +240,7 @@ function parseInclude(parser) {
         'commands': ast.commands,
         'currentCommand': 0,
         'functionArgs': new Map(),
+        'filePath': ast.absolutePath,
     });
 
     return {
@@ -292,6 +293,7 @@ arg.context.ifConditionResult = ${tuple[0].value.value};`],
                 'currentCommand': 0,
                 'functionArgs': new Map(),
                 'ignoreParentBacktrace': true,
+                'filePath': context.filePath,
             });
         },
         'noPosIncrease': true,
@@ -344,6 +346,7 @@ arg.context.ifConditionResult = ${tuple[0].value.value};`],
                 'currentCommand': 0,
                 'functionArgs': new Map(),
                 'ignoreParentBacktrace': true,
+                'filePath': context.filePath,
             });
         },
         'noPosIncrease': true,
@@ -385,13 +388,13 @@ function parseElse(parser) {
     return {
         'instructions': [],
         'callback': () => {
-            parser.increase_context_pos();
             parser.pushNewContext({
                 'ast': context.ast,
                 'commands': ret.value.value,
                 'currentCommand': 0,
                 'functionArgs': new Map(),
                 'ignoreParentBacktrace': true,
+                'filePath': context.filePath,
             });
         },
         'noPosIncrease': true,
