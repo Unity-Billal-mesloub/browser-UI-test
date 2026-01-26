@@ -13,6 +13,8 @@ const {
     getFileInfoFromPath,
     extractFileNameWithoutExtension,
     plural,
+    sleep,
+    waitForConditionTrue,
 } = require('./utils.js');
 const consts = require('./consts.js');
 const { Options } = require('./options.js');
@@ -203,7 +205,7 @@ async function runAllCommands(loaded, logs, options, browser) {
         page = await browser.newPage(options, currentFile, logs);
     } catch (e) {
         // try again after waiting a bit first to avoid "Session with given id not found" error...
-        await new Promise(r => setTimeout(r, 100));
+        await sleep(100);
         page = await browser.newPage(options, currentFile, logs);
     }
     await browser.emulate(options, currentFile, page, logs);
@@ -419,14 +421,19 @@ async function runAllCommands(loaded, logs, options, browser) {
             }
             if (shouldWait) {
                 // We wait a bit between each command to be sure the browser can follow.
-                await new Promise(r => setTimeout(r, 50));
+                await sleep(50);
             }
             // If the URL changed, we wait for the document to be fully loaded before running other
             // commands.
             const url = page.url();
             if (url !== current_url) {
                 current_url = url;
-                await page.waitForFunction('document.readyState === "complete"');
+                if (!await waitForConditionTrue(pages, async() => {
+                    return await page.evaluate(() => 'return document.readyState === "complete"');
+                })) {
+                    logs.error(currentFile, `\`${url}\` never finished loading`);
+                    break command_loop;
+                }
             }
             if (checkJsErrors() || checkRequestErrors()) {
                 break command_loop;

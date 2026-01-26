@@ -195,6 +195,30 @@ function getFileInfo(context_parser, line = null, isExact = true) {
     return getFileInfoFromPath(context_parser.getCurrentFile(), line, isExact);
 }
 
+async function sleep(ms) {
+    await new Promise(r => setTimeout(r, ms));
+}
+
+async function waitForConditionTrue(pages, callback) {
+    const timeLimit = pages[0].getDefaultTimeout();
+    const timeAdd = 50;
+    let allTime = 0;
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+        if (await callback()) {
+            return true;
+        }
+        if (timeLimit === 0) {
+            continue;
+        }
+        allTime += timeAdd;
+        if (allTime >= timeLimit) {
+            return false;
+        }
+    }
+}
+
 module.exports = {
     'addSlash': addSlash,
     'getCurrentDir': getCurrentDir,
@@ -218,5 +242,7 @@ module.exports = {
     'hasError': hasError,
     'getFileInfo': getFileInfo,
     'getFileInfoFromPath': getFileInfoFromPath,
+    'sleep': sleep,
+    'waitForConditionTrue': waitForConditionTrue,
     'ALLOWED_EMULATE_MEDIA_FEATURES_KEYS': ALLOWED_EMULATE_MEDIA_FEATURES_KEYS,
 };
