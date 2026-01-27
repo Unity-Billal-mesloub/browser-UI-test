@@ -206,11 +206,21 @@ async function waitForConditionTrue(pages, callback) {
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
-        if (await callback()) {
-            return true;
-        }
-        if (timeLimit === 0) {
-            continue;
+        try {
+            if (await callback()) {
+                return true;
+            }
+            if (timeLimit === 0) {
+                continue;
+            }
+        } catch (err) {
+            if (err.message && err.message.indexOf
+                && err.message.indexOf('Execution context was destroyed') === 0)
+            {
+                // "All good", we continue to wait.
+            } else {
+                throw err;
+            }
         }
         allTime += timeAdd;
         if (allTime >= timeLimit) {
