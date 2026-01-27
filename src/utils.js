@@ -215,8 +215,8 @@ async function waitForConditionTrue(pages, callback) {
             }
         } catch (err) {
             if (err.message && err.message.indexOf
-                && err.message.indexOf('Execution context was destroyed') === 0)
-            {
+                && err.message.indexOf('Execution context was destroyed') === 0
+            ) {
                 // "All good", we continue to wait.
             } else {
                 throw err;

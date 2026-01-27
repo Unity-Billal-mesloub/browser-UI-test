@@ -175,7 +175,8 @@ async function runInstruction(loadedInstruction, pages, extras) {
         return;
     } catch (err) { // execution error
         if (err.message && err.message.indexOf
-            && err.message.indexOf('Execution context was destroyed') === 0) {
+            && err.message.indexOf('Execution context was destroyed') === 0
+        ) {
             // Puppeteer error so this time we wait until the document is ready before trying
             // again.
             await pages[0].waitForFunction('document.readyState === "complete"');
