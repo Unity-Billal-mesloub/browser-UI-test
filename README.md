@@ -15,8 +15,8 @@ This is a big README, so to make you go through it faster:
  * [Using this framework as a dependency](#using-this-framework-as-a-dependency)
  * [Exported elements](#exported-elements)
  * [Running it directly](#running-it-directly)
- * [`.goml` scripts](https://github.com/GuillaumeGomez/browser-UI-test/blob/main/goml-script.md)
- * [Command list](https://github.com/GuillaumeGomez/browser-UI-test/blob/main/goml-script.md#command-list)
+ * [`.goml` scripts](https://github.com/Unity-Billal-mesloub/browser-UI-test/blob/main/goml-script.md)
+ * [Command list](https://github.com/Unity-Billal-mesloub/browser-UI-test/blob/main/goml-script.md#command-list)
  * [Run tests](#run-tests)
  * [Donations](#donations)
 
@@ -47,7 +47,7 @@ set-text: ("#button", "hello") // set text of element #button
 assert-text: ("#button", "hello") // check if #button element's text has been set to "hello"
 ```
 
-The list of the commands is available [here](https://github.com/GuillaumeGomez/browser-UI-test/blob/main/goml-script.md).
+The list of the commands is available [here](https://github.com/Unity-Billal-mesloub/browser-UI-test/blob/main/goml-script.md).
 
 ### Using this framework as a binary
 
@@ -213,7 +213,7 @@ The list of fields of the `Options` class is the following:
 
  * `allowFileAccessFromFiles`: if set to `true`, it will disable CORS errors for local files
  * `debug`: display more information
- * `emulate`: name of the device you want to emulate (list of available devices is [here](https://github.com/puppeteer/puppeteer/blob/b5020dc04121b265c77662237dfb177d6de06053/src/common/DeviceDescriptors.ts) or you can use `--show-devices` option)
+ * `emulate`: name of the device you want to emulate (list of available devices is [here](https://github.com/Unity-Billal-mesloub/puppeteer/blob/b5020dc04121b265c77662237dfb177d6de06053/src/common/DeviceDescriptors.ts) or you can use `--show-devices` option)
  * `emulateMediaFeatures`: media features to be used in the `.goml` scripts
  * `executablePath`: browser's executable path to be used
  * `extensions`: extensions to be loaded by the browser
@@ -292,6 +292,6 @@ $ npm run ui-test --bless
 
 If you appreciate my work and want to support me, you can do it here:
 
- * [github-sponsors](https://github.com/sponsors/GuillaumeGomez)
+ * [github-sponsors](https://github.com/sponsors/Unity-Billal-mesloub)
  * [paypal](https://paypal.me/imperioland)
  * [![Become a patron](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/GuillaumeGomez)
